@@ -1,0 +1,27 @@
+name: Lobby
+version: '1.0-SNAPSHOT'
+main: org.abgehoben.lobby.main
+api-version: '1.19'
+authors: [ SirAbgehoben ]
+description: AbgehobenNetwork Lobby Plugin
+website: https://abgehoben.org
+commands:
+  p:
+    description: Set a parkour checkpoint.
+  pstart:
+    description: Start the parkour.
+  fly:
+    description: Allows the player to fly in the Lobby
+  cosmetics:
+    description: Opens the Cosmetics Box
+  particles:
+    description: Toggle the particle effects
+permissions:
+  Lobby.register.parkour:
+    description: Allows use of the /p command
+    default: op
+  Lobby.fly:
+    description: Allows the player to fly in the Lobby
+    default: op
+
+depend: [Citizens]
