@@ -14,6 +14,7 @@ Welcome to the **AbgehobenNetwork Lobby Plugin**! This plugin is designed to enh
 ## Upcoming Features
 
 - **Player Glow**: Highlight players with a glowing effect.
+- **Settings**: Settings Menu for user-friendliness.
 - **Full Permissions**: Granular permission controls.
 - **Better Log**: Enhanced logging capabilities for better debugging and tracking.
 - **Configuration File**: A partially developed configuration file for easier setup.
