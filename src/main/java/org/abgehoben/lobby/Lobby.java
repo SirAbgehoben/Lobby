@@ -395,6 +395,17 @@ public class Lobby implements Listener, CommandExecutor{
             return;
         }
 
+        if (event.getBlockReplacedState().getType() == Material.GRASS ||
+            event.getBlockReplacedState().getType() == Material.VINE ||
+            event.getBlockReplacedState().getType() == Material.CAVE_VINES ||
+            event.getBlockReplacedState().getType() == Material.CAVE_VINES_PLANT ||
+            event.getBlockReplacedState().getType() == Material.SNOW ||
+            event.getBlockReplacedState().getType() == Material.SNOW_BLOCK
+            ) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (isItemWithName(itemInHand, ChatColor.GOLD + "Golden Blocks") && itemInHand.getType() == Material.RED_SANDSTONE) {
             Location blockLocation = event.getBlock().getLocation();
             placedBlocks.put(blockLocation, System.currentTimeMillis());
