@@ -3,6 +3,7 @@ package org.abgehoben.lobby;
 
 import eu.cloudnetservice.driver.inject.InjectionLayer;
 import eu.cloudnetservice.driver.provider.CloudServiceProvider;
+import eu.cloudnetservice.driver.provider.ServiceTaskProvider;
 import eu.cloudnetservice.driver.registry.ServiceRegistry;
 import eu.cloudnetservice.driver.service.ServiceInfoSnapshot;
 import eu.cloudnetservice.modules.bridge.BridgeDocProperties;
@@ -22,6 +23,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static java.util.Collections.replaceAll;
 
 public class GameMenu implements Listener, InventoryHolder {
 
@@ -44,7 +47,7 @@ public class GameMenu implements Listener, InventoryHolder {
         createGameMenuItem(gui, 24, Material.GRASS_BLOCK, "§aSurvival", "§7Gather resources, build a base, and survive!");// Added lore
         createGameMenuItem(gui, 25, Material.ELYTRA, "§aElytraRace", "§7Soar through the sky and race to the finish line!");// Added lore
         createGameMenuItem(gui, 22, Material.NETHER_STAR, "§aLobby", "§7Return to the main lobby.");// Added lore
-
+        createGameMenuItem(gui, 36, Material.SHULKER_SHELL, "§aOther", "§7Other games.");// Added lore
 
 
         player.openInventory(gui);
@@ -63,6 +66,30 @@ public class GameMenu implements Listener, InventoryHolder {
         gui.setItem(slot, item);
     }
 
+    public void OtherGames(Player player) {
+        CloudServiceProvider cloudServiceProvider = InjectionLayer.ext().instance(CloudServiceProvider.class);
+        Inventory gui = Bukkit.createInventory(this, 45, ChatColor.GOLD + "§lGameMenu");
+        this.currentInventory = gui;
+
+        Collection<ServiceInfoSnapshot> allServices = cloudServiceProvider.runningServices(); //using all services because I didn't find a funktion for tasks will just strip -[int] out
+
+        int InventorySlotNumber = 0;
+        for(ServiceInfoSnapshot service : allServices) {
+            if(service.name().startsWith("Lobby") ||
+               service.name().startsWith("TurfWars") ||
+               service.name().startsWith("Proxy") ||
+               service.name().startsWith("TNTRun") ||
+               service.name().startsWith("Elytra") ||
+               service.name().startsWith("Survival")) {
+                continue; //exit current loop iteration
+            }
+
+            createGameMenuItem(gui, InventorySlotNumber, Material.NOTE_BLOCK, "§a" + service.name().replaceAll("-\\d+", ""), "§7Hi, I am a " + service.name().replaceAll("-\\d+", "")); //remove -<int>
+            InventorySlotNumber++;
+        }
+
+        player.openInventory(gui);
+    }
 
 
     private void openTaskSelector(Player player, String task) {
@@ -128,7 +155,7 @@ public class GameMenu implements Listener, InventoryHolder {
                 return;
             }
         }
-        clickCooldowns.put(player.getUniqueId(), currentTime);
+        clickCooldowns.put(player.getUniqueId(), Long.valueOf(currentTime));
 
         InventoryView view = event.getView();
         if (view.getTopInventory() == null || view.getTopInventory().getHolder() != this) {
@@ -146,8 +173,13 @@ public class GameMenu implements Listener, InventoryHolder {
         String clickedItemName = clickedItem.getItemMeta().getDisplayName();
 
         switch (ChatColor.stripColor(clickedItemName)) {
+            case "Other":
+                OtherGames(player);
+
+                break;
             case "TurfWars":
                 openTaskSelector(player,"TurfWars");
+
                 break;
             case "TNTRun":
                 openTaskSelector(player,"TNTRun");
@@ -159,14 +191,21 @@ public class GameMenu implements Listener, InventoryHolder {
                 break;
             case "ElytraRace":
                 openTaskSelector(player,"ElytraRace");
+
                 break;
             case "Lobby":
                 player.closeInventory();
                 player.teleport(new org.bukkit.Location(player.getWorld(),-25.5, 157.2, 2.5, -135,0));
                 break;
-            default:
+            default: //default for when in TaskSelector
                 CloudServiceProvider cloudServiceProvider = InjectionLayer.ext().instance(CloudServiceProvider.class);
                 ServiceInfoSnapshot service = cloudServiceProvider.serviceByName(ChatColor.stripColor(clickedItemName));
+
+                if (!ChatColor.stripColor(clickedItemName).contains("-")) {
+                    openTaskSelector(player, ChatColor.stripColor(clickedItemName));
+                    break;
+                }
+
                 if (service != null && service.readProperty(BridgeDocProperties.IS_ONLINE)) {
                     player.closeInventory();
                     sendPlayerToServer(player, ChatColor.stripColor(clickedItemName));
