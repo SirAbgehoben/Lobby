@@ -143,7 +143,7 @@ public class CosmeticsBox implements Listener, CommandExecutor{
 
 
 
-    public CosmeticsBox(org.abgehoben.lobby.main plugin) {
+    public CosmeticsBox(main plugin) {
         this.plugin = plugin;
         this.mySQLManager = new MySQLManager(plugin, "CloudCosmetics", "192.168.178.105", 3306, "Minecraft", "6778_Minecraft");
 

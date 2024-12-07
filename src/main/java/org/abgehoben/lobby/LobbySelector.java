@@ -21,18 +21,17 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class LobbySelector implements Listener, InventoryHolder { // Implement Listener and InventoryHolder
 
-    private final main plugin;
     private Inventory currentInventory; // Store the currently open inventory
     private final Map<UUID, Long> clickCooldowns = new HashMap<>();
 
-    public LobbySelector(main plugin) {
-        this.plugin = plugin;
+    public LobbySelector(JavaPlugin plugin) {
         Bukkit.getPluginManager().registerEvents(this, plugin); // Register the listener
 
     }

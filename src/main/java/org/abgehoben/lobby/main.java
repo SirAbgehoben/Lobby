@@ -10,6 +10,8 @@ public final class main extends JavaPlugin {
     private Parkour Parkour;
     private Lobby Lobby;  // Field for Lobby class
     private CosmeticsBox CosmeticsBox;
+    private LobbyNPCs LobbyNPCs;
+    private static GameMenu GameMenu;
 
     @Override
     public void onEnable() {
@@ -18,6 +20,8 @@ public final class main extends JavaPlugin {
         Lobby = new Lobby(this);     // Instantiate Lobby
         DailyRewards = new DailyRewards(this); // Instantiate DailyRewards
         CosmeticsBox = new CosmeticsBox(this); // Instantiate CosmeticsBox
+        LobbyNPCs = new LobbyNPCs(this); //instantiate LobbyNPCs
+        GameMenu = new GameMenu(this);
 
         getCommand("p").setExecutor(Parkour);
         getCommand("pstart").setExecutor(Parkour);
@@ -26,6 +30,7 @@ public final class main extends JavaPlugin {
         getCommand("particles").setExecutor(CosmeticsBox);
 
         getServer().getPluginManager().registerEvents(Lobby, this);    // Register Lobby events
+        getServer().getPluginManager().registerEvents(LobbyNPCs, this);    // Register Lobby events
         getServer().getPluginManager().registerEvents(Parkour, this); // Register events
         getServer().getPluginManager().registerEvents(DailyRewards, this);
         getServer().getPluginManager().registerEvents(CosmeticsBox, this);
@@ -54,5 +59,11 @@ public final class main extends JavaPlugin {
     }
     public CosmeticsBox getCosmeticsBox() {
         return CosmeticsBox;
+    }
+    public LobbyNPCs getLobbyNPCs() {
+        return LobbyNPCs;
+    }
+    public static GameMenu getGameMenu() {
+        return GameMenu;
     }
 }

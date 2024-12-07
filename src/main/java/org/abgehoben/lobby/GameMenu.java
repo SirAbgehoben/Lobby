@@ -20,6 +20,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -28,13 +29,11 @@ import static java.util.Collections.replaceAll;
 
 public class GameMenu implements Listener, InventoryHolder {
 
-    private final main plugin;
     private Inventory currentInventory;
     private final Map<UUID, Long> clickCooldowns = new HashMap<>();
 
 
-    public GameMenu(main plugin) {
-        this.plugin = plugin;
+    public GameMenu(JavaPlugin plugin) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
