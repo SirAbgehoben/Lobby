@@ -83,9 +83,9 @@ public class GameMenu implements Listener, InventoryHolder {
                 continue; //exit current loop iteration
             }
 
-            String taskName = service.name().replaceAll("-\\d+", ""); //remove -<int>
+            String taskName = service.name().replaceAll("-\\d+", ""); //remove "-"<int>
 
-            createGameMenuItem(gui, InventorySlotNumber, Material.NOTE_BLOCK, "§a" + taskName, "§7Hi, I" + (taskName.endsWith("s") ? " have some ": " am a ") + taskName);
+            createGameMenuItem(gui, InventorySlotNumber, Material.NOTE_BLOCK, "§a" + taskName, "§7Hi, I" + (taskName.endsWith("s") ? " have some " + taskName + " for you": " am a " + taskName));
             InventorySlotNumber++;
         }
 

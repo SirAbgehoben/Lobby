@@ -1,7 +1,12 @@
-//CosmeticsBox.java             1. rename items 2. add commands for particle menu and turn on / off 3. add glow 4. add permissions
-
 package org.abgehoben.lobby;
-
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,9 +18,13 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -23,6 +32,7 @@ import java.util.function.BiConsumer;
 public class CosmeticsBox implements Listener, CommandExecutor{
 
     private final MySQLManager mySQLManager;
+    private ProtocolManager protocolManager;
     private boolean connectedToDatabase = false;
     private final org.abgehoben.lobby.main plugin;
     private final Map<UUID, BukkitRunnable> activeParticleTasks = new HashMap<>();
@@ -34,6 +44,20 @@ public class CosmeticsBox implements Listener, CommandExecutor{
     private final Map<UUID, Boolean> particlesEnabled = new HashMap<>();
 
     private final Map<UUID, Integer> shapeMenuPage = new HashMap<>(); // Add this field
+
+    private final Map<UUID, ChatColor> selectedGlowColors = new HashMap<>();
+    private final Map<UUID, Boolean> glowEnabled = new HashMap<>();
+    private final Map<Player, Team> tempTeams = new HashMap<>();
+
+    public static ChatColor[] glowColors = {
+            ChatColor.DARK_GRAY,
+            ChatColor.GOLD,
+            ChatColor.BLACK,
+            ChatColor.BLUE,
+            ChatColor.GREEN,
+            ChatColor.DARK_RED,
+            ChatColor.DARK_AQUA
+    };
 
 
     private final List<Particle> displayParticles = Arrays.asList(
@@ -141,6 +165,20 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         }
     }
 
+    private Material getMaterialForGlowColors(ChatColor color) {
+        switch (color) {
+            case ChatColor.DARK_GRAY: return Material.GRAY_DYE;
+            case ChatColor.GOLD: return Material.ORANGE_DYE;
+            case ChatColor.BLACK: return Material.BLACK_DYE;
+            case ChatColor.BLUE: return Material.BLUE_DYE;
+            case ChatColor.GREEN: return Material.LIME_DYE;
+            case ChatColor.DARK_RED: return Material.RED_DYE;
+            case ChatColor.DARK_AQUA: return Material.CYAN_DYE;
+
+            default: return Material.GLOWSTONE_DUST; // Fallback if no mapping found
+        }
+    }
+
 
 
     public CosmeticsBox(main plugin) {
@@ -151,12 +189,18 @@ public class CosmeticsBox implements Listener, CommandExecutor{
             mySQLManager.connect();
             connectedToDatabase = true;
             plugin.getLogger().info("Successfully connected to the database.");
-            createTableIfNotExists(); // Create table after successful connection
+            createParticleTableIfNotExists(); // Create table after successful connection
+            createGlowTableIfNotExists();
         } catch (SQLException e) {
             plugin.getLogger().severe("Failed to connect to database: " + e.getMessage());
             connectedToDatabase = false;
         }
 
+        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
+            this.protocolManager = ProtocolLibrary.getProtocolManager();
+        } else {
+            plugin.getLogger().warning("ProtocolLib is not installed. Colored glow effects will not be available.");
+        }
         particleShapes.put("Circle", this::circleShape);
         particleShapes.put("Star", this::starShape);
         particleShapes.put("Wings", this::wingsShape);
@@ -178,11 +222,12 @@ public class CosmeticsBox implements Listener, CommandExecutor{
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         loadPlayerCosmetics(player);
+        loadPlayerGlow(player);
         // ... any other join event logic ...
     }
 
 
-    private void createTableIfNotExists() {
+    private void createParticleTableIfNotExists() {
         if (connectedToDatabase) {
             try {
                 String createTableSQL = "CREATE TABLE IF NOT EXISTS player_particles (" +
@@ -194,6 +239,20 @@ public class CosmeticsBox implements Listener, CommandExecutor{
                 mySQLManager.execute(createTableSQL);
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error creating table: " + e.getMessage());
+            }
+        }
+    }
+    private void createGlowTableIfNotExists() {
+        if (connectedToDatabase) {
+            try {
+                String createTableSQL = "CREATE TABLE IF NOT EXISTS player_glow (" +
+                        "uuid VARCHAR(36) PRIMARY KEY," +
+                        "glow_color VARCHAR(255)," +
+                        "enabled BOOLEAN" +
+                        ")";
+                mySQLManager.execute(createTableSQL);
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error creating glow table: " + e.getMessage());
             }
         }
     }
@@ -235,13 +294,41 @@ public class CosmeticsBox implements Listener, CommandExecutor{
             }
         }
     }
+    public void loadPlayerGlow(Player player) {
+        if (connectedToDatabase) {
+            try {
+                mySQLManager.query("SELECT glow_color, enabled FROM player_glow WHERE uuid = ?", rs -> {
+                    try {
+                        if (rs.next()) {
+                            String glowColorName = rs.getString("glow_color");
+                            boolean enabled = rs.getBoolean("enabled");
 
+                            if (glowColorName != null) {
+                                selectedGlowColors.put(player.getUniqueId(), ChatColor.valueOf(glowColorName));
+                            }
+                            glowEnabled.put(player.getUniqueId(), enabled);
+
+                            if (enabled) {
+                                startGlowing(player);
+                            }
+                        }
+                    } catch (SQLException e) {
+                        plugin.getLogger().severe("Error loading player glow: " + e.getMessage());
+                    }
+                    return null;
+                }, player.getUniqueId().toString());
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error loading player glow: " + e.getMessage());
+            }
+        }
+    }
 
 
 
     public void openCosmeticsBox(Player player) {
         Inventory cosmeticsInventory = Bukkit.createInventory(null, 27, "Cosmetics Box");
         cosmeticsInventory.setItem(12, createItem(Material.NETHER_STAR, "Particle Effects", null));
+        cosmeticsInventory.setItem(14, createItem(Material.GLOW_INK_SAC, "Glow", null));
         player.openInventory(cosmeticsInventory);
     }
 
@@ -304,6 +391,15 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         String itemName = clickedItem.getItemMeta().getDisplayName();
         String inventoryTitle = event.getView().getTitle();
 
+        if (ChatColor.stripColor(itemName).equals("Glow")) {
+            openGlowMenu(player);
+            return;
+        }
+
+        if (inventoryTitle.equals("Glow Menu")) {
+            handleGlowMenuClick(player, itemName, event);
+        }
+
         if (inventoryTitle.startsWith("Particle Menu - Page ")) {
             try {
                 int page = Integer.parseInt(inventoryTitle.split(" - ")[1].split(" ")[1]) - 1;
@@ -358,6 +454,21 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         }
     }
 
+    private void handleGlowMenuClick(Player player, String itemName, InventoryClickEvent event) {
+        if (Arrays.stream(glowColors).anyMatch(c -> c.name().equals(itemName))) {
+            try {
+                ChatColor glowColor = ChatColor.valueOf(itemName);
+                setSelectedGlowColor(player, glowColor);
+                player.closeInventory();
+                player.sendMessage("§aGlow color §7" + glowColor.name() + " §aselected!");
+            } catch (IllegalArgumentException e) {
+                player.sendMessage("§cInvalid glow color selected.");
+            }
+        } else if (itemName.startsWith("§aGlow")) {
+            toggleGlow(player);
+            openGlowMenu(player); // Reopen to update the button
+        }
+    }
 
 
     private void handleParticleMenuClick(Player player, String itemName, int page, InventoryClickEvent event) {
@@ -440,38 +551,6 @@ public class CosmeticsBox implements Listener, CommandExecutor{
     }
 
 
-    private Particle getCurrentParticle(Player player) {
-        if (!connectedToDatabase) {
-
-            player.sendMessage("§cNot connected to the database. Cannot retrieve particle selection.");
-            return null;
-
-        }
-        try {
-            return mySQLManager.query("select Particle Effect FROM player_particles WHERE uuid = ?",
-                    resultSet -> {
-                        try {
-                            if (resultSet.next()) {
-                                return Particle.valueOf(resultSet.getString("particle"));
-
-                            }
-                        } catch (SQLException e) {
-
-                            plugin.getLogger().severe("Error getting player particle: " + e.getMessage());
-                        }
-                        return null;
-
-                    }, player.getUniqueId().toString());
-
-        } catch (SQLException e) {
-
-            plugin.getLogger().severe("Error getting player particle: " + e.getMessage());
-
-            return null;
-        }
-    }
-
-
     private void toggleParticles(Player player) {
         UUID uuid = player.getUniqueId();
         boolean enabled = !particlesEnabled.getOrDefault(uuid, false);
@@ -492,7 +571,97 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         }
     }
 
+    private void openGlowMenu(Player player) {
+        Inventory glowMenu = Bukkit.createInventory(null, 27, "Glow Menu");
 
+
+        for (int i = 0; i < glowColors.length; i++) {
+            glowMenu.setItem(i + 1, createItem(getMaterialForGlowColors(glowColors[i]), glowColors[i].name(), null));
+        }
+
+        // Toggle Glow button
+        boolean enabled = glowEnabled.getOrDefault(player.getUniqueId(), false);
+        Material mat = enabled ? Material.LIME_DYE : Material.RED_DYE;
+        String name = enabled ? "§aGlow §8§l> §aOn" : "§aGlow §8§l> §cOff";
+        glowMenu.setItem(22, createItem(mat, name, null));
+
+        player.openInventory(glowMenu);
+    }
+
+    private void setSelectedGlowColor(Player player, ChatColor glowColor) {
+        selectedGlowColors.put(player.getUniqueId(), glowColor);
+        glowEnabled.put(player.getUniqueId(), true);
+
+        startGlowing(player);
+
+        if (connectedToDatabase) {
+            try {
+                mySQLManager.update("INSERT INTO player_glow (uuid, glow_color, enabled) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE glow_color = ?, enabled = ?",
+                        player.getUniqueId().toString(), glowColor.name(), true, glowColor.name(), true);
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error setting player glow color: " + e.getMessage());
+                player.sendMessage("§cError saving glow color selection to the database.");
+            }
+        } else {
+            player.sendMessage("§cNot connected to the database. Glow color selection will not be saved permanently.");
+        }
+    }
+
+    private void toggleGlow(Player player) {
+        UUID uuid = player.getUniqueId();
+        boolean enabled = !glowEnabled.getOrDefault(uuid, false);
+        glowEnabled.put(uuid, enabled);
+
+        if (enabled) {
+            startGlowing(player);
+        } else {
+            stopGlowing(player);
+        }
+
+        if (connectedToDatabase) {
+            try {
+                mySQLManager.update("UPDATE player_glow SET enabled = ? WHERE uuid = ?", enabled, uuid.toString());
+            } catch (SQLException e) {
+                plugin.getLogger().severe("Error updating glow status: " + e.getMessage());
+            }
+        }
+    }
+
+
+    private void startGlowing(Player player) {
+        ChatColor glowColor = selectedGlowColors.get(player.getUniqueId());
+        if (glowColor != null && glowEnabled.getOrDefault(player.getUniqueId(), false)) {
+            setGlow(player, true, glowColor);
+        }
+    }
+
+    private void stopGlowing(Player player) {
+        setGlow(player, false, null);
+    }
+
+    private void setGlow(Player player, boolean enable, ChatColor color) {
+        player.setGlowing(enable);
+
+        Scoreboard board = player.getScoreboard();
+        player.setScoreboard(board);
+        // Remove player from old team
+        Team oldTeam = board.getEntryTeam(player.getName());
+        if (oldTeam != null) {
+            oldTeam.removeEntry(player.getName());
+        }
+
+        if (enable) {
+            String teamName = color.name() + player.getUniqueId();
+
+            Team team = board.getTeam(teamName);
+            if (team == null) {
+                team = board.registerNewTeam(teamName);
+                team.setColor(color);
+            }
+
+            team.addEntry(player.getName());
+        }
+    }
 
     private void openParticleMenu(Player player) {
         int currentPage = particleMenuPage.getOrDefault(player.getUniqueId(), 0);
@@ -808,6 +977,6 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         Location particleLoc = new Location(playerLoc.getWorld(), playerLoc.getX(), playerLoc.getY() + 2.25, playerLoc.getZ());
         player.getWorld().spawnParticle(particle, particleLoc, 1, 0, 0, 0, 0);
     }
-
-
 }
+
+
