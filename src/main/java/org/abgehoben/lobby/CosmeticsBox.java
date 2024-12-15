@@ -1,12 +1,6 @@
 package org.abgehoben.lobby;
-import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedDataWatcher;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,13 +12,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -47,7 +39,6 @@ public class CosmeticsBox implements Listener, CommandExecutor{
 
     private final Map<UUID, ChatColor> selectedGlowColors = new HashMap<>();
     private final Map<UUID, Boolean> glowEnabled = new HashMap<>();
-    private final Map<Player, Team> tempTeams = new HashMap<>();
 
     public static ChatColor[] glowColors = {
             ChatColor.DARK_GRAY,
@@ -327,8 +318,8 @@ public class CosmeticsBox implements Listener, CommandExecutor{
 
     public void openCosmeticsBox(Player player) {
         Inventory cosmeticsInventory = Bukkit.createInventory(null, 27, "Cosmetics Box");
-        cosmeticsInventory.setItem(12, createItem(Material.NETHER_STAR, "Particle Effects", null));
-        cosmeticsInventory.setItem(14, createItem(Material.GLOW_INK_SAC, "Glow", null));
+        cosmeticsInventory.setItem(12, createItem(Material.NETHER_STAR, "§eParticle Effects", null));
+        cosmeticsInventory.setItem(14, createItem(Material.GLOW_INK_SAC, "§eGlow", null));
         player.openInventory(cosmeticsInventory);
     }
 
@@ -417,7 +408,7 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         } else { // Handle other inventory clicks
             switch (inventoryTitle) {
                 case "Cosmetics Box":
-                    if (itemName.equals("Particle Effects")) {
+                    if (itemName.equals("§eParticle Effects")) {
                         openParticleMainMenu(player);
                     }
                     break;

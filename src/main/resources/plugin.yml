@@ -16,6 +16,10 @@ commands:
     description: Opens the Cosmetics Box
   particles:
     description: Toggle the particle effects
+  glow:
+    description: Toggle the glow
+  dailyreward:
+    description: Opens the daily reward GUI
 permissions:
   Lobby.register.parkour:
     description: Allows use of the /p command

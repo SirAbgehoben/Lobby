@@ -13,6 +13,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -31,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class DailyRewards implements Listener {
+public class DailyRewards implements Listener, CommandExecutor {
 
     private boolean connectedToDatabase = false;
     private final int dailyRewardsNpcId; // Store the NPC ID
@@ -117,6 +120,19 @@ public class DailyRewards implements Listener {
         }
     }
 
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("dailyreward")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "This command can only be used by a player.");
+                return true;
+            }
+            Player player = (Player) sender;
+
+            handleNPCInteraction(player);
+        }
+        return false;
+    }
 
     private void handleNPCInteraction(Player player) {
         String playerUUID = player.getUniqueId().toString();

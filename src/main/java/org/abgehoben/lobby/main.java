@@ -28,6 +28,8 @@ public final class main extends JavaPlugin {
         getCommand("fly").setExecutor(Lobby);
         getCommand("cosmetics").setExecutor(CosmeticsBox);
         getCommand("particles").setExecutor(CosmeticsBox);
+        getCommand("glow").setExecutor(CosmeticsBox);
+        getCommand("dailyreward").setExecutor(DailyRewards);
 
         getServer().getPluginManager().registerEvents(Lobby, this);    // Register Lobby events
         getServer().getPluginManager().registerEvents(LobbyNPCs, this);    // Register Lobby events
