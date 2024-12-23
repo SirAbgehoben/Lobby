@@ -75,6 +75,7 @@ public class GameMenu implements Listener, InventoryHolder {
         int InventorySlotNumber = 0;
         for(ServiceInfoSnapshot service : allServices) {
             if(service.name().startsWith("Lobby") ||
+               service.name().startsWith("limbo") ||
                service.name().startsWith("TurfWars") ||
                service.name().startsWith("Proxy") ||
                service.name().startsWith("TNTRun") ||

@@ -172,18 +172,18 @@ public class CosmeticsBox implements Listener, CommandExecutor{
 
 
 
-    public CosmeticsBox(main plugin) {
+    public CosmeticsBox(main plugin, Map mySQLData) {
         this.plugin = plugin;
-        this.mySQLManager = new MySQLManager(plugin, "CloudCosmetics", "192.168.178.105", 3306, "Minecraft", "6778_Minecraft");
+        this.mySQLManager = new MySQLManager(plugin, (String) mySQLData.get("name"), (String) mySQLData.get("host"), (int) mySQLData.get("port"), (String) mySQLData.get("user"), (String) mySQLData.get("password"));
 
         try {
             mySQLManager.connect();
             connectedToDatabase = true;
-            plugin.getLogger().info("Successfully connected to the database.");
+            plugin.getLogger().info("Successfully connected to the database." + mySQLData.get("name"));
             createParticleTableIfNotExists(); // Create table after successful connection
             createGlowTableIfNotExists();
         } catch (SQLException e) {
-            plugin.getLogger().severe("Failed to connect to database: " + e.getMessage());
+            plugin.getLogger().severe("Failed to connect to database, " + mySQLData.get("name") +", " + e.getMessage());
             connectedToDatabase = false;
         }
 

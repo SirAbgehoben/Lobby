@@ -25,6 +25,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -44,7 +45,6 @@ public class Lobby implements Listener, CommandExecutor{
     private final LobbySelector lobbySelector; // Instance of LobbySelector
     private final CosmeticsBox CosmeticsBox; // Instance of CosmeticsBox
 
-    private final main plugin;
     private final Map<UUID, Long> launchCooldowns = new HashMap<>();
     private final double launchpadRadius = 0.75; // Radius around the pressure plate
 
@@ -53,19 +53,19 @@ public class Lobby implements Listener, CommandExecutor{
     private final double restrictedRadius = 7;
     private final ItemStack redSandstoneBlocks;
 
+    private final JavaPlugin plugin;
+
     private final Location[] launchpadLocations = new Location[]{
             new Location(null, -25.5, 157, -0.5),
             new Location(null, -23.5, 157, 0.5),
             new Location(null, -22.5, 157, 2.5)
     };
 
-    public Lobby(main plugin) {
-        this.plugin = plugin;
+    public Lobby(JavaPlugin plugin, Map cosmeticsBoxMySQLData) {
         this.gameMenu = new GameMenu(plugin); // Initialize GameMenu
         this.lobbySelector = new LobbySelector(plugin); // Initialize LobbySelector
-        this.CosmeticsBox = new CosmeticsBox(plugin); // Initialize CosmeticsBox
-        plugin.getCommand("fly").setExecutor(this); // Register the command
-        Bukkit.getPluginManager().registerEvents(this.lobbySelector, plugin);
+        this.CosmeticsBox = new CosmeticsBox((main) plugin, cosmeticsBoxMySQLData);
+        this.plugin = plugin;
         this.redSandstoneBlocks = createRedSandstoneBlocks();
     }
 

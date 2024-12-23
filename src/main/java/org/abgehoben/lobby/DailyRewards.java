@@ -29,10 +29,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class DailyRewards implements Listener, CommandExecutor {
 
@@ -43,14 +40,14 @@ public class DailyRewards implements Listener, CommandExecutor {
     private Economy econ = null;
     private final HashMap<UUID, Long> cooldown = new HashMap<>();
 
-    public DailyRewards(JavaPlugin plugin) {
+    public DailyRewards(JavaPlugin plugin, Map mySQLData) {
         this.plugin = plugin;
-        this.mySQLManager = new MySQLManager(plugin, "CloudLobby", "192.168.178.105", 3306, "Minecraft", "6778_Minecraft"); // Update your DB credentials
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.mySQLManager = new MySQLManager(plugin, (String) mySQLData.get("name"), (String) mySQLData.get("host"), (int) mySQLData.get("port"), (String) mySQLData.get("user"), (String) mySQLData.get("password"));
+
         try {
             mySQLManager.connect();
             connectedToDatabase = true;
-            plugin.getLogger().info("Successfully connected to the database.");
+            plugin.getLogger().info("Successfully connected to the database." + mySQLData.get("name"));
             createTableIfNotExists(); // Create table after successful connection
         } catch (SQLException e) {
             plugin.getLogger().severe("Failed to connect to database: " + e.getMessage());
