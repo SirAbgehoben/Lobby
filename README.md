@@ -1,4 +1,4 @@
-# AbgehobenNetwork Private Lobby Plugin
+# AbgehobenNetwork Lobby Plugin
 
 Welcome to the **AbgehobenNetwork Lobby Plugin**! This plugin is designed to enhance the lobby experience for your Minecraft network. 
 
