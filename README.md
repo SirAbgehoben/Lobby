@@ -47,6 +47,7 @@ Welcome to the **AbgehobenNetwork Lobby Plugin**! This plugin is designed to enh
 - Minecraft Paper 1.19.4
 - Java 23
 - MySQL database
+- CloudNet v4 rc10+
 
 ## Contributing
 
