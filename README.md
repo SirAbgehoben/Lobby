@@ -10,10 +10,11 @@ Welcome to the **AbgehobenNetwork Lobby Plugin**! This plugin is designed to enh
 - **MySQL Player Information Storage**: Efficient and reliable player data management.
 - **Particles (Cosmetics)**: Add flair to your lobby with various particle effects.
 - **Parkour Functionality**: Challenge your players with exciting parkour courses.
+- **Player Glow**: Highlight players with a glowing effect.
 
 ## Upcoming Features
 
-- **Player Glow**: Highlight players with a glowing effect.
+
 - **Settings**: Settings Menu for user-friendliness.
 - **Full Permissions**: Granular permission controls.
 - **Better Log**: Enhanced logging capabilities for better debugging and tracking.
