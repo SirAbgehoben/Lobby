@@ -3,10 +3,8 @@ package org.abgehoben.lobby;
 
 import eu.cloudnetservice.driver.inject.InjectionLayer;
 import eu.cloudnetservice.driver.provider.CloudServiceProvider;
-import eu.cloudnetservice.driver.registry.ServiceRegistry;
 import eu.cloudnetservice.driver.service.ServiceInfoSnapshot;
 import eu.cloudnetservice.modules.bridge.BridgeDocProperties;
-import eu.cloudnetservice.modules.bridge.player.CloudPlayer;
 import eu.cloudnetservice.modules.bridge.player.PlayerManager;
 import eu.cloudnetservice.modules.bridge.player.executor.PlayerExecutor;
 import org.bukkit.Bukkit;
@@ -15,7 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.Listener;  // Make sure this import is present
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
@@ -47,7 +45,7 @@ public class LobbySelector implements Listener, InventoryHolder { // Implement L
         List<ServiceInfoSnapshot> lobbies = new ArrayList<>(cloudServiceProvider.servicesByTask("Lobby"));
 
 
-        Collections.sort(lobbies, Comparator.comparingInt(o -> {
+        lobbies.sort(Comparator.comparingInt(o -> {
             String name = o.name();
             try {
                 return Integer.parseInt(name.substring(name.lastIndexOf("-") + 1));
@@ -62,7 +60,7 @@ public class LobbySelector implements Listener, InventoryHolder { // Implement L
         for (ServiceInfoSnapshot lobby : lobbies) {
             if (lobby.readProperty(BridgeDocProperties.IS_ONLINE)) {
                 ItemStack item;
-                if (lobby.readProperty(BridgeDocProperties.PLAYERS).size() > 0) {
+                if (!lobby.readProperty(BridgeDocProperties.PLAYERS).isEmpty()) {
                     item = new ItemStack(Material.EMERALD);
                 } else {
                     item = new ItemStack(Material.SMOOTH_QUARTZ);
@@ -110,7 +108,8 @@ public class LobbySelector implements Listener, InventoryHolder { // Implement L
         clickCooldowns.put(player.getUniqueId(), currentTime); // Update last click time
 
         InventoryView view = event.getView();
-        if (view.getTopInventory() == null || view.getTopInventory().getHolder() != this) {
+        view.getTopInventory();
+        if (view.getTopInventory().getHolder() != this) {
             return;
         }
 
@@ -150,8 +149,17 @@ public class LobbySelector implements Listener, InventoryHolder { // Implement L
 
 
     private void sendPlayerToLobby(Player player, String lobbyName) {
-        PlayerManager playerManager = InjectionLayer.ext().instance(ServiceRegistry.class).firstProvider(PlayerManager.class);
-        playerManager.playerExecutor(player.getUniqueId()).connect(lobbyName);
+        PlayerManager playerManager = InjectionLayer.ext().instance(PlayerManager.class);
+        if (playerManager == null) {
+            player.sendMessage("§cError: PlayerManager unavailable.");
+            return;
+        }
+        PlayerExecutor executor = playerManager.playerExecutor(player.getUniqueId());
+        if (executor == null) {
+            player.sendMessage("§cError: Cannot create player executor.");
+            return;
+        }
+        executor.connect(lobbyName);
     }
 
 

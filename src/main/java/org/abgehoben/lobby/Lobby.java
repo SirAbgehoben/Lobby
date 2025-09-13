@@ -3,10 +3,6 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.BlockPosition;
-import org.abgehoben.lobby.GameMenu; // Import GameMenu
-import org.abgehoben.lobby.LobbySelector; // Import LobbySelector
-import org.abgehoben.lobby.CosmeticsBox; // import added
-import org.abgehoben.lobby.Parkour;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.*;
 import org.bukkit.command.CommandExecutor;
@@ -30,9 +26,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.util.Vector;
-import org.bukkit.block.Block; // Import for Block manipulation
+import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 
-import org.bukkit.scheduler.BukkitRunnable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -84,7 +80,7 @@ public class Lobby implements Listener, CommandExecutor{
         player.sendMessage("");
         player.sendMessage("§r    §7Welcome, §b§n" + player.getName() + "§r §7to AbgehobenNetwork");
         player.sendMessage("");
-        player.sendMessage("§r  §2§lWEBSITE §fwww.AbgehobenNetwork.net");
+        player.sendMessage("§r  §2§lWEBSITE §fabgehoben.org");
         player.sendMessage("§r  §9§lDISCORD §fdiscord.abgehoben.org");
         player.sendMessage("");
         player.sendMessage("§8§m+---------------***---------------+");
@@ -205,15 +201,12 @@ public class Lobby implements Listener, CommandExecutor{
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, String[] args) {
         if (command.getName().equalsIgnoreCase("fly")) {
-            if (!(sender instanceof Player)) {
+            if (!(sender instanceof Player player)) {
                 sender.sendMessage(ChatColor.RED + "This command can only be used by a player.");
                 return true;
             }
-
-            Player player = (Player) sender;
-
 
 
             if (player.hasPermission("lobby.fly")) {
@@ -247,17 +240,17 @@ public class Lobby implements Listener, CommandExecutor{
     private void giveLobbyItems(Player player) {
         // Navigator Compass
         ItemStack navigator = createItem(Material.COMPASS, 0, ChatColor.GREEN + "Game Menu §7(Right-Click)",
-                Arrays.asList(ChatColor.GRAY + "Right click to open the server selector"));
+                List.of(ChatColor.GRAY + "Right click to open the server selector"));
         player.getInventory().setItem(0, navigator); // Far left slot
 
         // Server Info Book
         ItemStack serverInfo = createItem(Material.BOOK, 0, "§bServer Information §7(Right-Click)",
-                Arrays.asList(ChatColor.GRAY + "Right click to show server infos"));
+                List.of(ChatColor.GRAY + "Right click to show server infos"));
         player.getInventory().setItem(1, serverInfo); // Next to Navigator
 
         // CosmeticsBox
         ItemStack Cosmeticsbox = createItem(Material.CHEST, 0, "§bCosmetics Box §7(Right-Click)",
-                Arrays.asList(ChatColor.GRAY + "Right click to open the Cosmetics Box"));
+                List.of(ChatColor.GRAY + "Right click to open the Cosmetics Box"));
         player.getInventory().setItem(4, Cosmeticsbox); // middle slot
 
         // Red Sandstone Blocks
@@ -265,12 +258,12 @@ public class Lobby implements Listener, CommandExecutor{
 
         // Lobby selector
         ItemStack LobbySelector = createItem(Material.NETHER_STAR, 0, "§bLobby Selector §7(Right-Click)",
-                Arrays.asList(ChatColor.GRAY + "Right click to open the Lobby selector"));
+                List.of(ChatColor.GRAY + "Right click to open the Lobby selector"));
         player.getInventory().setItem(7, LobbySelector); // Next to playerVisibility Dye
 
         // Player Visibility Dye (starts as "shown")
         ItemStack playerVisibility = createItem(Material.LIME_DYE, 0, "§bPlayers §8§l> §aVisible §7(Right-Click)",
-                Arrays.asList(ChatColor.GRAY + "§7Click to hide all players!"));
+                List.of(ChatColor.GRAY + "§7Click to hide all players!"));
         player.getInventory().setItem(8, playerVisibility); // Slot 8
 
         player.updateInventory();

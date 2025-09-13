@@ -3,11 +3,11 @@ package org.abgehoben.lobby;
 
 import eu.cloudnetservice.driver.inject.InjectionLayer;
 import eu.cloudnetservice.driver.provider.CloudServiceProvider;
-import eu.cloudnetservice.driver.provider.ServiceTaskProvider;
 import eu.cloudnetservice.driver.registry.ServiceRegistry;
 import eu.cloudnetservice.driver.service.ServiceInfoSnapshot;
 import eu.cloudnetservice.modules.bridge.BridgeDocProperties;
 import eu.cloudnetservice.modules.bridge.player.PlayerManager;
+import eu.cloudnetservice.modules.bridge.player.executor.PlayerExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -24,8 +24,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-
-import static java.util.Collections.replaceAll;
 
 public class GameMenu implements Listener, InventoryHolder {
 
@@ -113,7 +111,7 @@ public class GameMenu implements Listener, InventoryHolder {
             ItemStack item;
             if (service.readProperty(BridgeDocProperties.IS_ONLINE)) {
 
-                if (service.readProperty(BridgeDocProperties.PLAYERS).size() > 0) {
+                if (!service.readProperty(BridgeDocProperties.PLAYERS).isEmpty()) {
                     item = new ItemStack(Material.EMERALD);
                 } else {
                     item = new ItemStack(Material.SMOOTH_QUARTZ);
@@ -157,7 +155,7 @@ public class GameMenu implements Listener, InventoryHolder {
                 return;
             }
         }
-        clickCooldowns.put(player.getUniqueId(), Long.valueOf(currentTime));
+        clickCooldowns.put(player.getUniqueId(), currentTime);
 
         InventoryView view = event.getView();
         if (view.getTopInventory() == null || view.getTopInventory().getHolder() != this) {
@@ -226,9 +224,26 @@ public class GameMenu implements Listener, InventoryHolder {
 
 
     private void sendPlayerToServer(Player player, String serverName) {
-        PlayerManager playerManager = InjectionLayer.ext().instance(ServiceRegistry.class).firstProvider(PlayerManager.class);
-        playerManager.playerExecutor(player.getUniqueId()).connect(serverName);
+        ServiceRegistry serviceRegistry = InjectionLayer.ext().instance(ServiceRegistry.class);
+        if (serviceRegistry == null) {
+            player.sendMessage("§cError: ServiceRegistry unavailable.");
+            return;
+        }
+
+        PlayerManager playerManager = serviceRegistry.defaultInstance(PlayerManager.class);
+        if (playerManager == null) {
+            player.sendMessage("§cError: PlayerManager unavailable.");
+            return;
+        }
+
+        PlayerExecutor executor = playerManager.playerExecutor(player.getUniqueId());
+        if (executor == null) {
+            player.sendMessage("§cError: Cannot create player executor.");
+            return;
+        }
+        executor.connect(serverName);
     }
+
 
 
 
