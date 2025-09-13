@@ -27,14 +27,14 @@ public class LobbyNPCs implements Listener {
 
     public LobbyNPCs(JavaPlugin plugin) {
         // NPC creation
-        Location location = new Location(plugin.getServer().getWorld("world"), -23.5, 157, -18.5); // Replace "world" if needed
+        Location location = new Location(plugin.getServer().getWorld("world"), -23.5, 157, -18.5);
         NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, "§b§lOtherGames");
         this.OtherGamesNpcId = npc.getId();
         npc.spawn(location);
 
         // Skin
         SkinTrait skinTrait = npc.getOrAddTrait(SkinTrait.class);
-        skinTrait.setSkinName("RainManik");
+        skinTrait.setSkinName("Lewtty");
 
         // Protection
         npc.setProtected(true);

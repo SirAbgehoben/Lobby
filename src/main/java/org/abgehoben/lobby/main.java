@@ -43,11 +43,11 @@ public final class main extends JavaPlugin {
         Map<String, Object> cosmeticsBoxMySQLData = (Map<String, Object>) config.get("CosmeticsBox");
         Map<String, Object> dailyRewardsMySQLData = (Map<String, Object>) config.get("DailyRewards");
 
-        Parkour = new Parkour(this); // instantiate Parkour
-        Lobby = new Lobby(this, cosmeticsBoxMySQLData);     // Instantiate Lobby
-        DailyRewards = new DailyRewards(this, dailyRewardsMySQLData); // Instantiate DailyRewards
-        CosmeticsBox = new CosmeticsBox(this, cosmeticsBoxMySQLData); // Instantiate CosmeticsBox
-        LobbyNPCs = new LobbyNPCs(this); //instantiate LobbyNPCs
+        Parkour = new Parkour(this);
+        Lobby = new Lobby(this, cosmeticsBoxMySQLData);
+        DailyRewards = new DailyRewards(this, dailyRewardsMySQLData);
+        CosmeticsBox = new CosmeticsBox(this, cosmeticsBoxMySQLData);
+        LobbyNPCs = new LobbyNPCs(this);
         GameMenu = new GameMenu(this);
 
         getCommand("p").setExecutor(Parkour);
@@ -73,7 +73,7 @@ public final class main extends JavaPlugin {
             try {
                 // Read the existing configuration
                 try (FileInputStream inputStream = new FileInputStream(dataFile)) {
-                    Yaml yaml = new Yaml(new Constructor(Map.class));
+                    Yaml yaml = new Yaml();
                     config = yaml.load(inputStream);
                     System.out.println("Configuration loaded");
                 } catch (IOException e) {

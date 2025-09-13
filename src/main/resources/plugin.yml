@@ -1,7 +1,7 @@
 name: Lobby
 version: '1.0-SNAPSHOT'
 main: org.abgehoben.lobby.main
-api-version: '1.19'
+api-version: '1.21'
 authors: [ SirAbgehoben ]
 description: AbgehobenNetwork Lobby Plugin
 website: https://abgehoben.org

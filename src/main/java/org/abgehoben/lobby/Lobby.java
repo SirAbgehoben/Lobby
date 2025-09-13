@@ -388,7 +388,7 @@ public class Lobby implements Listener, CommandExecutor{
             return;
         }
 
-        if (event.getBlockReplacedState().getType() == Material.GRASS ||
+        if (event.getBlockReplacedState().getType() == Material.SHORT_GRASS ||
             event.getBlockReplacedState().getType() == Material.VINE ||
             event.getBlockReplacedState().getType() == Material.CAVE_VINES ||
             event.getBlockReplacedState().getType() == Material.CAVE_VINES_PLANT ||

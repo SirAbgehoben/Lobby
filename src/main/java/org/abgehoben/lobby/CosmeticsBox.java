@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.BiConsumer;
 
+
 public class CosmeticsBox implements Listener, CommandExecutor{
 
     private final MySQLManager mySQLManager;
@@ -52,7 +53,7 @@ public class CosmeticsBox implements Listener, CommandExecutor{
 
 
     private final List<Particle> displayParticles = Arrays.asList(
-            Particle.VILLAGER_ANGRY,
+            Particle.ANGRY_VILLAGER,
             Particle.ASH,
             Particle.BUBBLE_COLUMN_UP,
             Particle.BUBBLE_POP,
@@ -61,7 +62,6 @@ public class CosmeticsBox implements Listener, CommandExecutor{
             Particle.CLOUD,
             Particle.COMPOSTER,
             Particle.CRIT,
-            Particle.CRIT_MAGIC,
             Particle.DAMAGE_INDICATOR,
             Particle.DOLPHIN,
             Particle.DRAGON_BREATH,
@@ -69,91 +69,76 @@ public class CosmeticsBox implements Listener, CommandExecutor{
             Particle.DRIPPING_DRIPSTONE_WATER,
             Particle.DRIPPING_HONEY,
             Particle.DRIPPING_OBSIDIAN_TEAR,
-            Particle.REDSTONE,
+            Particle.DUST,
             Particle.DUST_COLOR_TRANSITION,
             Particle.ELECTRIC_SPARK,
-            Particle.ENCHANTMENT_TABLE,
+            Particle.ENCHANT,
             Particle.END_ROD,
-            Particle.EXPLOSION_LARGE,
+            Particle.EXPLOSION,
             Particle.FALLING_DUST,
             Particle.FLAME,
             Particle.FLASH,
             Particle.GLOW,
             Particle.GLOW_SQUID_INK,
-            Particle.VILLAGER_HAPPY,
+            Particle.HAPPY_VILLAGER,
             Particle.HEART,
-            Particle.SMOKE_LARGE,
+            Particle.LARGE_SMOKE,
             Particle.LAVA,
-            Particle.TOWN_AURA,
             Particle.NAUTILUS,
             Particle.NOTE,
-            Particle.EXPLOSION_NORMAL,
+            Particle.EXPLOSION,
             Particle.PORTAL,
-            Particle.WATER_SPLASH,
-            Particle.SCULK_CHARGE,
-            Particle.SMOKE_NORMAL,
+            Particle.SPLASH,
+            Particle.SMOKE,
             Particle.SNOWFLAKE,
             Particle.SOUL,
             Particle.SOUL_FIRE_FLAME,
-            Particle.SPELL,
+            Particle.SPIT,
             Particle.SQUID_INK,
             Particle.SWEEP_ATTACK,
             Particle.WARPED_SPORE,
             Particle.WHITE_ASH
     );
     private Material getMaterialForParticle(Particle particle) {
-        switch (particle) {
-            case VILLAGER_ANGRY: return Material.EMERALD;
-            case ASH: return Material.GUNPOWDER;
-            case BUBBLE_COLUMN_UP: return Material.SOUL_SAND;
-            case BUBBLE_POP: return Material.WATER_BUCKET;
-            case CAMPFIRE_COSY_SMOKE: return Material.CAMPFIRE;
-            case CAMPFIRE_SIGNAL_SMOKE: return Material.HAY_BLOCK;
-            case CLOUD: return Material.WHITE_WOOL;
-            case COMPOSTER: return Material.COMPOSTER;
-            case CRIT: return Material.IRON_SWORD;
-            case CRIT_MAGIC: return Material.DIAMOND_SWORD;
-            case DAMAGE_INDICATOR: return Material.RED_DYE;
-            case DOLPHIN: return Material.HEART_OF_THE_SEA;
-            case DRAGON_BREATH: return Material.DRAGON_BREATH;
-            case DRIPPING_DRIPSTONE_LAVA: return Material.LAVA_BUCKET;
-            case DRIPPING_DRIPSTONE_WATER: return Material.WATER_BUCKET;
-            case DRIPPING_HONEY: return Material.HONEY_BOTTLE;
-            case DRIPPING_OBSIDIAN_TEAR: return Material.CRYING_OBSIDIAN;
-            case REDSTONE: return Material.GLOWSTONE_DUST;
-            case DUST_COLOR_TRANSITION: return Material.REDSTONE; // Generic color effect
-            case ELECTRIC_SPARK: return Material.REDSTONE_TORCH;
-            case ENCHANTMENT_TABLE: return Material.ENCHANTING_TABLE;
-            case END_ROD: return Material.END_ROD;
-            case EXPLOSION_LARGE: return Material.TNT;
-            case FALLING_DUST: return Material.SAND;
-            case FLAME: return Material.BLAZE_POWDER;
-            case FLASH: return Material.FIREWORK_STAR;
-            case GLOW: return Material.GLOWSTONE_DUST;
-            case GLOW_SQUID_INK: return Material.GLOW_INK_SAC;
-            case VILLAGER_HAPPY: return Material.EMERALD;
-            case HEART: return Material.RED_DYE;
-            case SMOKE_LARGE: return Material.SMOKER;
-            case LAVA: return Material.LAVA_BUCKET;
-            case TOWN_AURA: return Material.MYCELIUM;
-            case NAUTILUS: return Material.NAUTILUS_SHELL;
-            case NOTE: return Material.NOTE_BLOCK;
-            case EXPLOSION_NORMAL: return Material.FIREWORK_STAR;
-            case PORTAL: return Material.ENDER_PEARL;
-            case WATER_SPLASH: return Material.WATER_BUCKET;
-            case SCULK_CHARGE: return Material.SCULK_SENSOR;
-            case SMOKE_NORMAL: return Material.SMOKER;
-            case SNOWFLAKE: return Material.SNOWBALL;
-            case SOUL: return Material.SOUL_SAND;
-            case SOUL_FIRE_FLAME: return Material.SOUL_TORCH;
-            case SPELL: return Material.POTION;
-            case SQUID_INK: return Material.INK_SAC;
-            case SWEEP_ATTACK: return Material.IRON_SWORD;
-            case WARPED_SPORE: return Material.WARPED_FUNGUS;
-            case WHITE_ASH: return Material.BASALT;
-
-            default: return Material.GLOWSTONE_DUST; // Fallback if no mapping found
-        }
+        return switch (particle) {
+            case ANGRY_VILLAGER, HAPPY_VILLAGER -> Material.EMERALD;
+            case ASH -> Material.GUNPOWDER;
+            case BUBBLE_COLUMN_UP, SOUL -> Material.SOUL_SAND;
+            case BUBBLE_POP, SPLASH, DRIPPING_DRIPSTONE_WATER -> Material.WATER_BUCKET;
+            case CAMPFIRE_COSY_SMOKE -> Material.CAMPFIRE;
+            case CAMPFIRE_SIGNAL_SMOKE -> Material.HAY_BLOCK;
+            case CLOUD -> Material.WHITE_WOOL;
+            case COMPOSTER -> Material.COMPOSTER;
+            case CRIT, SWEEP_ATTACK -> Material.IRON_SWORD;
+            case DAMAGE_INDICATOR, HEART -> Material.RED_DYE;
+            case DOLPHIN -> Material.HEART_OF_THE_SEA;
+            case DRAGON_BREATH -> Material.DRAGON_BREATH;
+            case DRIPPING_DRIPSTONE_LAVA, LAVA -> Material.LAVA_BUCKET;
+            case DRIPPING_HONEY -> Material.HONEY_BOTTLE;
+            case DRIPPING_OBSIDIAN_TEAR -> Material.CRYING_OBSIDIAN;
+            case DUST -> Material.GLOWSTONE_DUST;
+            case DUST_COLOR_TRANSITION -> Material.REDSTONE; // Generic color effect
+            case ELECTRIC_SPARK -> Material.REDSTONE_TORCH;
+            case ENCHANT -> Material.ENCHANTING_TABLE;
+            case END_ROD -> Material.END_ROD;
+            case EXPLOSION -> Material.TNT;
+            case FALLING_DUST -> Material.SAND;
+            case FLAME -> Material.BLAZE_POWDER;
+            case FLASH -> Material.FIREWORK_STAR;
+            case GLOW -> Material.GLOWSTONE_DUST;
+            case GLOW_SQUID_INK -> Material.GLOW_INK_SAC;
+            case LARGE_SMOKE, SMOKE -> Material.SMOKER;
+            case NAUTILUS -> Material.NAUTILUS_SHELL;
+            case NOTE -> Material.NOTE_BLOCK;
+            case PORTAL -> Material.ENDER_PEARL;
+            case SNOWFLAKE -> Material.SNOWBALL;
+            case SOUL_FIRE_FLAME -> Material.SOUL_TORCH;
+            case SPIT -> Material.POTION;
+            case SQUID_INK -> Material.INK_SAC;
+            case WARPED_SPORE -> Material.WARPED_FUNGUS;
+            case WHITE_ASH -> Material.BASALT;
+            default -> Material.GLOWSTONE_DUST; // Fallback if no mapping found
+        };
     }
 
     private Material getMaterialForGlowColors(ChatColor color) {
