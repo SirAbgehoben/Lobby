@@ -115,7 +115,7 @@ public class Lobby implements Listener, CommandExecutor{
             player.sendMessage("");
             player.sendMessage("§e§lServer Information");
             player.sendMessage("");
-            player.sendMessage("§bWebsite: §fwww.abgehoben.org");
+            player.sendMessage("§bWebsite: §fabgehoben.org");
             player.sendMessage("§dDiscord: §fdiscord.abgehoben.org");
             player.sendMessage("");
 
@@ -415,17 +415,20 @@ public class Lobby implements Listener, CommandExecutor{
                         return;
                     }
 
+                    PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BLOCK_BREAK_ANIMATION);
+
                     if (damageLevel >= 10 ) {
                         if (placedBlocks.containsKey(blockLocation)) {
                             Block block = blockLocation.getBlock();
                             block.setType(Material.AIR);
                             placedBlocks.remove(blockLocation);
+                            packet.getIntegers().write(0, blockEntityId);
+                            packet.getBlockPositionModifier().write(0, new BlockPosition(blockLocation.getBlockX(), blockLocation.getBlockY(), blockLocation.getBlockZ()));
+                            packet.getIntegers().write(1, 0);
                         }
                         this.cancel();
                         return;
                     }
-
-                    PacketContainer packet = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.BLOCK_BREAK_ANIMATION);
 
                     packet.getIntegers().write(0, blockEntityId); // Use the unique block entity ID here
                     packet.getBlockPositionModifier().write(0, new BlockPosition(blockLocation.getBlockX(), blockLocation.getBlockY(), blockLocation.getBlockZ()));
@@ -433,13 +436,11 @@ public class Lobby implements Listener, CommandExecutor{
 
                     try {
                         ProtocolLibrary.getProtocolManager().sendServerPacket(player, packet);
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
                     damageLevel++;
-
                 }
             }.runTaskTimer(plugin, 10L, 10L);
 

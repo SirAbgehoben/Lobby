@@ -805,14 +805,14 @@ public class CosmeticsBox implements Listener, CommandExecutor{
 
 
     private double getGroundLevel(Player player) {
-        Location playerLoc = player.getLocation();
+        Location playerLoc = player.getLocation(); //TODO async
         World world = playerLoc.getWorld();
         int x = playerLoc.getBlockX();
         int z = playerLoc.getBlockZ();
 
         int y = playerLoc.getBlockY();
-        while (y > 0 && !world.getBlockAt(x, y - 1, z).getType().isSolid()) {
-            y--;
+        while (y > world.getMinHeight() && !world.getBlockAt(x, y - 1, z).getType().isSolid()) {
+            y--; //TODO limit search distance
         }
         return y;
     }
@@ -833,7 +833,7 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         }
     }
 
-    private void starShape(Player player, Particle particle) {
+    private void starShape(Player player, Particle particle) {//TODO async
         double outerRadius = 2;
         double innerRadius = outerRadius / 2;
         int points = 5;
@@ -864,83 +864,37 @@ public class CosmeticsBox implements Listener, CommandExecutor{
     }
 
     private void wingsShape(Player player, Particle particle) {
-        // Get player's location
+        double wingSpan = 1;
+        double wingHeight = 1.5;
+        int pointsPerWing = 30;
+
         Location playerLoc = player.getLocation();
+        World world = playerLoc.getWorld();
 
-        // Ellipse parameters
-        double radiusX = 1.5; // X-axis radius
-        double radiusZ = 0.5; // Z-axis radius
-        int points = 50;      // Number of points per ellipse
-        double angleOffset1 = Math.toRadians(3);  // Offset for the first ellipse
-        double angleOffset2 = Math.toRadians(33); // Offset for the second ellipse
+        double yaw = Math.toRadians(playerLoc.getYaw());
+        double distanceBehind = -0.2;
 
-        // Rotation around the player
-        double rotationAroundPlayer = Math.toRadians(playerLoc.getYaw() - 180); // Rotate the entire shape around the player
+        for (int side = -1; side <= 1; side += 2) {
+            for (int i = 0; i < pointsPerWing; i++) {
+                double t = (double) i / (pointsPerWing - 1);
+                double x = side * wingSpan * t;
+                double y = wingHeight * Math.sin(Math.PI * t);
 
-        // Additional final rotation (90° upward rotation)
-        double finalRotation = Math.toRadians(90);
+                // Calculate rotated X and Z offsets
+                double offsetX = x * Math.cos(yaw);
+                double offsetZ = x * Math.sin(yaw);
 
-        for (int i = 0; i < points; i++) {
-            double angle = 2 * Math.PI * i / points;
+                // Calculate the position behind the player
+                double behindX = -distanceBehind * Math.sin(yaw);
+                double behindZ = distanceBehind * Math.cos(yaw);
 
-            // --- First Ellipse ---
-            // Calculate point on the ellipse
-            double x1 = radiusX * Math.cos(angle);
-            double z1 = radiusZ * Math.sin(angle);
-
-            // Apply angle offset for the first ellipse
-            double rotatedX1 = x1 * Math.cos(angleOffset1) - z1 * Math.sin(angleOffset1);
-            double rotatedZ1 = x1 * Math.sin(angleOffset1) + z1 * Math.cos(angleOffset1);
-
-            // Rotate the entire shape around the player
-            double finalX1 = rotatedX1 * Math.cos(rotationAroundPlayer) - rotatedZ1 * Math.sin(rotationAroundPlayer);
-            double finalZ1 = rotatedX1 * Math.sin(rotationAroundPlayer) + rotatedZ1 * Math.cos(rotationAroundPlayer);
-
-            // Apply the 90° final rotation (rotate around X-axis)
-            double rotatedY1 = finalZ1 * Math.sin(finalRotation);
-            double rotatedZ1Final = finalZ1 * Math.cos(finalRotation);
-
-            // Spawn particle for the first ellipse
-            Location particleLoc1 = new Location(
-                    playerLoc.getWorld(),
-                    playerLoc.getX() + finalX1,
-                    playerLoc.getY() + rotatedY1 + 1.5, // Base height
-                    playerLoc.getZ() + rotatedZ1Final
-            );
-            player.getWorld().spawnParticle(particle, particleLoc1, 1, 0, 0, 0, 0);
-
-            // --- Second Ellipse ---
-            // Calculate point on the ellipse
-            double x2 = radiusX * Math.cos(angle);
-            double z2 = radiusZ * Math.sin(angle);
-
-            // Apply angle offset for the second ellipse
-            double rotatedX2 = x2 * Math.cos(angleOffset2) - z2 * Math.sin(angleOffset2);
-            double rotatedZ2 = x2 * Math.sin(angleOffset2) + z2 * Math.cos(angleOffset2);
-
-            // Rotate the entire shape around the player
-            double finalX2 = rotatedX2 * Math.cos(rotationAroundPlayer) - rotatedZ2 * Math.sin(rotationAroundPlayer);
-            double finalZ2 = rotatedX2 * Math.sin(rotationAroundPlayer) + rotatedZ2 * Math.cos(rotationAroundPlayer);
-
-            // Apply the 90° final rotation (rotate around X-axis)
-            double rotatedY2 = finalZ2 * Math.sin(finalRotation);
-            double rotatedZ2Final = finalZ2 * Math.cos(finalRotation);
-
-            // Spawn particle for the second ellipse
-            Location particleLoc2 = new Location(
-                    playerLoc.getWorld(),
-                    playerLoc.getX() + finalX2,
-                    playerLoc.getY() + rotatedY2 + 1.5, // Base height
-                    playerLoc.getZ() + rotatedZ2Final
-            );
-            player.getWorld().spawnParticle(particle, particleLoc2, 1, 0, 0, 0, 0);
+                Location spawnLoc = playerLoc.clone().add(behindX + offsetX, y + 0.5, behindZ + offsetZ);
+                world.spawnParticle(particle, spawnLoc, 1, 0, 0, 0, 0);
+            }
         }
     }
 
-
-
-
-    private void pointUnder(Player player, Particle particle) {
+    private void pointUnder(Player player, Particle particle) {//TODO async
         double groundY = getGroundLevel(player);
         Location playerLoc = player.getLocation();
         double particleY = playerLoc.getY() > groundY + 1.5 ? playerLoc.getY() : groundY + 0.07;
@@ -948,7 +902,7 @@ public class CosmeticsBox implements Listener, CommandExecutor{
         player.getWorld().spawnParticle(particle, particleLoc, 1, 0, 0, 0, 0);
     }
 
-    private void pointAbove(Player player, Particle particle) {
+    private void pointAbove(Player player, Particle particle) {//TODO async
         Location playerLoc = player.getLocation();
         Location particleLoc = new Location(playerLoc.getWorld(), playerLoc.getX(), playerLoc.getY() + 2.25, playerLoc.getZ());
         player.getWorld().spawnParticle(particle, particleLoc, 1, 0, 0, 0, 0);

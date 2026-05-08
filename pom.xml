@@ -12,7 +12,7 @@
     <name>Lobby</name>
 
     <properties>
-        <java.version>23</java.version>
+        <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -50,10 +50,6 @@
     </build>
 
     <repositories>
-        <repository>
-            <id>cloudnet-repo</id>
-            <url>https://repo.cloudnetservice.eu/repository/maven-public/</url>
-        </repository>
         <repository>
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
@@ -94,7 +90,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.5-R0.1-SNAPSHOT</version>
+            <version>[1.21.5.build,)</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -118,32 +114,32 @@
         </dependency>
         <dependency>
             <groupId>eu.cloudnetservice.cloudnet</groupId>
-            <artifactId>driver</artifactId>
-            <version>4.0.0-RC14</version>
+            <artifactId>driver-api</artifactId>
+            <version>4.0.0-RC16</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>eu.cloudnetservice.cloudnet</groupId>
-            <artifactId>bridge-impl</artifactId>
-            <version>4.0.0-RC14</version>
+            <artifactId>bridge-api</artifactId>
+            <version>4.0.0-RC16</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>eu.cloudnetservice.cloudnet</groupId>
-            <artifactId>wrapper-jvm</artifactId>
-            <version>4.0.0-RC14</version>
+            <artifactId>wrapper-jvm-api</artifactId>
+            <version>4.0.0-RC16</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>eu.cloudnetservice.cloudnet</groupId>
             <artifactId>platform-inject-api</artifactId>
-            <version>4.0.0-RC14</version>
+            <version>4.0.0-RC16</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-chat</artifactId>
-            <version>1.16-R0.4</version>  <!-- Or latest version -->
+            <version>1.16-R0.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

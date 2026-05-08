@@ -3,8 +3,11 @@ package org.abgehoben.lobby;
 
 import eu.cloudnetservice.driver.inject.InjectionLayer;
 import eu.cloudnetservice.driver.provider.CloudServiceProvider;
+import eu.cloudnetservice.driver.provider.ServiceTaskProvider;
 import eu.cloudnetservice.driver.registry.ServiceRegistry;
 import eu.cloudnetservice.driver.service.ServiceInfoSnapshot;
+import eu.cloudnetservice.driver.service.ServiceLifeCycle;
+import eu.cloudnetservice.driver.service.ServiceTask;
 import eu.cloudnetservice.modules.bridge.BridgeDocProperties;
 import eu.cloudnetservice.modules.bridge.player.PlayerManager;
 import eu.cloudnetservice.modules.bridge.player.executor.PlayerExecutor;
@@ -64,27 +67,30 @@ public class GameMenu implements Listener, InventoryHolder {
     }
 
     public void OtherGames(Player player) {
-        CloudServiceProvider cloudServiceProvider = InjectionLayer.ext().instance(CloudServiceProvider.class);
+        ServiceTaskProvider serviceTaskProvider = InjectionLayer.ext().instance(ServiceTaskProvider.class);
         Inventory gui = Bukkit.createInventory(this, 45, ChatColor.GOLD + "§lGameMenu");
         this.currentInventory = gui;
 
-        Collection<ServiceInfoSnapshot> allServices = cloudServiceProvider.runningServices(); //using all services because I didn't find a funktion for tasks will just strip -[int] out
+        Collection<ServiceTask> allTasks = InjectionLayer.ext().instance(CloudServiceProvider.class).services().stream()
+                .filter(s -> s.lifeCycle() == ServiceLifeCycle.RUNNING)
+                .map(s -> serviceTaskProvider.serviceTask(s.serviceId().taskName()))
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
         int InventorySlotNumber = 0;
-        for(ServiceInfoSnapshot service : allServices) {
-            if(service.name().startsWith("Lobby") ||
-               service.name().startsWith("limbo") ||
-               service.name().startsWith("TurfWars") ||
-               service.name().startsWith("Proxy") ||
-               service.name().startsWith("TNTRun") ||
-               service.name().startsWith("Elytra") ||
-               service.name().startsWith("Survival")) {
+        for(ServiceTask task : allTasks) {
+            if(task.name().startsWith("Lobby") ||
+               task.name().startsWith("limbo") ||
+               task.name().startsWith("TurfWars") ||
+               task.name().startsWith("Proxy") ||
+               task.name().startsWith("TNTRun") ||
+               task.name().startsWith("Elytra") ||
+               task.name().startsWith("Survival")) {
                 continue; //exit current loop iteration
             }
 
-            String taskName = service.name().replaceAll("-\\d+", ""); //remove "-"<int>
-
-            createGameMenuItem(gui, InventorySlotNumber, Material.NOTE_BLOCK, "§a" + taskName, "§7Hi, I" + (taskName.endsWith("s") ? " have some " + taskName + " for you": " am a " + taskName));
+            createGameMenuItem(gui, InventorySlotNumber, Material.NOTE_BLOCK, "§a" + task.name(), "§7Hi, I" + (task.name().endsWith("s") ? " have some " + task.name() + " for you": " am a " + task.name()));
             InventorySlotNumber++;
         }
 
